@@ -1,1 +1,3 @@
 path,owner,group,mask
+/datastore/nick/test-dir1,nick,nick,700
+/datastore/nick/test-dir2,nick,www-data,750

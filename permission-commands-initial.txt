@@ -1,0 +1,38 @@
+cd /datastore/nick
+
+sudo chown nick:www-data -R Image\ Library/
+sudo chmod 770 -R Image\ Library/
+
+sudo chown nick:nick Image\ Library/
+sudo chmod 755 Image\ Library/
+
+sudo chown nick:nick -R Image\ Library/_temp-unorganized/
+sudo chmod 700 -R Image\ Library/_temp-unorganized/
+
+
+sudo chown nick:nick Video\ Library/
+sudo chmod 755 Video\ Library/
+
+sudo chown nick:plex -R Video\ Library/Movies/
+sudo chmod 750 -R Video\ Library/Movies/
+sudo chown nick:nick Video\ Library/Movies/
+sudo chmod 755 Video\ Library/Movies/
+
+sudo chown nick:plex -R Video\ Library/TV\ Shows/
+sudo chmod 750 -R Video\ Library/TV\ Shows/
+sudo chown nick:nick Video\ Library/TV\ Shows/
+sudo chmod 755 Video\ Library/TV\ Shows/
+
+
+
+sudo chown nick:nick -R Music\ Library/
+sudo chmod 700 -R Music\ Library/
+sudo chmod 755 Music\ Library/
+
+sudo chown nick:audio -R Music\ Library/\!mpd-saved-playlists/
+sudo chmod 770 -R Music\ Library/\!mpd-saved-playlists/
+
+sudo chown nick:audio -R Music\ Library/Content/
+sudo chmod 750 -R Music\ Library/Content/
+sudo chown nick:nick  Music\ Library/Content/
+sudo chmod 755 Music\ Library/Content/

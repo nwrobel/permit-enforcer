@@ -1,42 +1,34 @@
 '''
 Main script for permissions application project.
 '''
-import subprocess
+
 import os
 import csv
 import logging
-logger = logging.getLogger()
 
-def applyPermissionToPath(path, owner, group, mask):
-
-    # Set ownership and permissions using by calling the linux chown and chmod commands
-    # If the path is a dir, specify the recursive option
-    ownerGroup = "{}:{}".format(owner, group)
-    if (os.path.isdir(path)):    
-        subprocess.call(['sudo', 'chown', ownerGroup, '-R', path])
-        subprocess.call(['sudo', 'chmod', mask, '-R', path])
-    else:
-        subprocess.call(['sudo', 'chown', ownerGroup, path])
-        subprocess.call(['sudo', 'chmod', mask, path])
-
+from com.nwrobel import mypycommons
+import com.nwrobel.mypycommons.file
 
 if __name__ == '__main__':
 
-    permitConfigFilePath = '/datastore/nick/permissions.csv'
-    logger.info("Starting file permission application script")
+    thisDir = mypycommons.file.getThisScriptCurrentDirectory() 
+    configFilePath = mypycommons.file.JoinPaths(thisDir, 'permissions.csv')
+    logFilePath = '/var/log/permit-enforcer.log'
 
-    with open(permitConfigFilePath, mode='r') as permitConfigFile:
-        logger.info("Reading file permission config file {}".format(permitConfigFile))
-        permitCsv = csv.DictReader(permitConfigFile)
-        currentLine = 0
+    logging.basicConfig(filename=logFilePath, level=logging.INFO)
 
-        for permitRule in permitCsv:
-            if (currentLine != 0):
-                logger.info("Processing permission rule #{}: {} ({}:{} {})".format(currentLine, permitRule['path'], permitRule['owner'], permitRule['group'], permitRule['mask']))
-                applyPermissionToPath(permitRule['path'], permitRule['owner'], permitRule['group'], permitRule['mask'])
+    logging.info("Starting file permission application script")
+    logging.info("Reading permission config file: {}".format(configFilePath))
 
-            currentLine += 1
+    permissionRules = mypycommons.file.readCSVFile(configFilePath)
+    currentLine = 1
 
-        logger.info("All permission rules finished applying, script complete")
+    for rule in permissionRules:
+        logging.info("Applying permission rule #{}: {} ({}:{} {})".format(currentLine, rule['path'], rule['owner'], rule['group'], rule['mask']))
+        mypycommons.file.applyPermissionToPath(rule['path'], rule['owner'], rule['group'], rule['mask'])
+
+        currentLine += 1
+
+    logging.info("All permission rules finished applying, script completed successfully")
        
 

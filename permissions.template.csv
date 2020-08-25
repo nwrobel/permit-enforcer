@@ -1,1 +1,3 @@
 path,owner,group,mask
+/path/to/some/dir,username,username,700
+/path/to/some/file,username,www-data,770
