@@ -42,8 +42,15 @@ if __name__ == '__main__':
         else:
             raise "Invalid value for CSV column 'recursive': should be 0 or 1"
 
-        logger.info("Applying permission rule #{}: {} ({}:{} {}, Recursive={})".format(currentLine, rule['path'], rule['owner'], rule['group'], rule['mask'], useRecursive))
-        mypycommons.file.applyPermissionToPath(rule['path'], rule['owner'], rule['group'], rule['mask'], recursive=useRecursive)
+        if (rule['applyToType'] == 'f'):
+            applyToType = 'file'
+        elif (rule['applyToType'] == 'd'):
+            applyToType = 'directory'
+        else:
+            applyToType = ''
+
+        logger.info("Applying permission rule #{}: {} ({}:{}, {}, DoOnlyForType={}, Recursive={})".format(currentLine, rule['path'], rule['owner'], rule['group'], rule['mask'], applyToType, useRecursive))
+        mypycommons.file.applyPermissionToPath(rule['path'], rule['owner'], rule['group'], rule['mask'], onlyChildPathType=applyToType, recursive=useRecursive)
 
         currentLine += 1
 
