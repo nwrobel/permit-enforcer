@@ -12,21 +12,23 @@ import com.nwrobel.mypycommons.logger
 
 def getProjectLogsDir():
     currentDir = mypycommons.file.getThisScriptCurrentDirectory()
-    logsDir = mypycommons.file.JoinPaths(currentDir, '~logs')
+    logsDir = mypycommons.file.joinPaths(currentDir, '~logs')
 
-    if (not mypycommons.file.directoryExists(logsDir)):
+    if (not mypycommons.file.pathExists(logsDir)):
         mypycommons.file.createDirectory(logsDir)
     
     return logsDir
 
 if __name__ == '__main__':
 
-    mypycommons.logger.initSharedLogger(logFilename='apply-permissions.log', logDir=getProjectLogsDir())
-    mypycommons.logger.setSharedLoggerConsoleOutputLogLevel('info')
-    logger = mypycommons.logger.getSharedLogger()
+    # Set up logger
+    mypycommons.logger.configureLoggerWithBasicSettings(__name__, logFilename='apply-permissions.log', logDir=getProjectLogsDir())
+    mypycommons.logger.setLoggerConsoleOutputLogLevel(__name__, 'info')
+    mypycommons.logger.setLoggerFileOutputLogLevel(__name__, 'info')
+    logger = logging.getLogger(__name__)
 
     thisDir = mypycommons.file.getThisScriptCurrentDirectory()
-    configFilePath = mypycommons.file.JoinPaths(thisDir, 'permissions.csv')
+    configFilePath = mypycommons.file.joinPaths(thisDir, 'permissions.csv')
 
     logger.info("Starting file permission application script")
     logger.info("Reading permission config file: {}".format(configFilePath))
@@ -42,16 +44,9 @@ if __name__ == '__main__':
         else:
             raise "Invalid value for CSV column 'recursive': should be 0 or 1"
 
-        if (rule['applyToType'] == 'f'):
-            applyToType = 'file'
-        elif (rule['applyToType'] == 'd'):
-            applyToType = 'directory'
-        else:
-            applyToType = ''
+        logger.info("Applying permission rule #{}: {} ({}:{}, {}, Recursive={})".format(currentLine, rule['path'], rule['owner'], rule['group'], rule['mask'], useRecursive))
 
-        logger.info("Applying permission rule #{}: {} ({}:{}, {}, DoOnlyForType={}, Recursive={})".format(currentLine, rule['path'], rule['owner'], rule['group'], rule['mask'], applyToType, useRecursive))
-        mypycommons.file.applyPermissionToPath(rule['path'], rule['owner'], rule['group'], rule['mask'], onlyChildPathType=applyToType, recursive=useRecursive)
-
+        mypycommons.file.applyPermissionToPath(rule['path'], rule['owner'], rule['group'], rule['mask'], recursive=useRecursive)
         currentLine += 1
 
     logger.info("All permission rules finished applying, script completed successfully")
