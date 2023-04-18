@@ -21,14 +21,13 @@ def getProjectLogsDir():
 
 if __name__ == '__main__':
 
+    configFilePath = '/datastore/nick/Development/Projects/permit-enforcer/config/permissions-zinc.csv'
+
     # Set up logger
     mypycommons.logger.configureLoggerWithBasicSettings(__name__, logFilename='apply-permissions.log', logDir=getProjectLogsDir())
-    mypycommons.logger.setLoggerConsoleOutputLogLevel(__name__, 'info')
-    mypycommons.logger.setLoggerFileOutputLogLevel(__name__, 'info')
+    mypycommons.logger.setLoggerConsoleOutputLogLevel(__name__, mypycommons.logger.LogLevel.INFO)
+    mypycommons.logger.setLoggerFileOutputLogLevel(__name__, mypycommons.logger.LogLevel.INFO)
     logger = logging.getLogger(__name__)
-
-    thisDir = mypycommons.file.getThisScriptCurrentDirectory()
-    configFilePath = mypycommons.file.joinPaths(thisDir, 'permissions.csv')
 
     logger.info("Starting file permission application script")
     logger.info("Reading permission config file: {}".format(configFilePath))
