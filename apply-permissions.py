@@ -5,6 +5,7 @@ Main script for permissions application project.
 import os
 import csv
 import logging
+import argparse
 
 from com.nwrobel import mypycommons
 import com.nwrobel.mypycommons.file
@@ -19,18 +20,33 @@ def getProjectLogsDir():
     
     return logsDir
 
-if __name__ == '__main__':
+def getConfigFilepath(configFilename):
+    currentDir = mypycommons.file.getThisScriptCurrentDirectory()
+    configDir = mypycommons.file.joinPaths(currentDir, 'config')
 
-    configFilePath = '/datastore/nick/Development/Projects/permit-enforcer/config/permissions-zinc.csv'
+    return mypycommons.file.joinPaths(configDir, configFilename)
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("--config-file", 
+        help="permissions config file name in config/",
+        default="permissions.csv",
+        type=str,
+        dest='configFile'
+    )
+    args = parser.parse_args()
 
     # Set up logger
-    mypycommons.logger.configureLoggerWithBasicSettings(__name__, logFilename='apply-permissions.log', logDir=getProjectLogsDir())
-    mypycommons.logger.setLoggerConsoleOutputLogLevel(__name__, mypycommons.logger.LogLevel.INFO)
-    mypycommons.logger.setLoggerFileOutputLogLevel(__name__, mypycommons.logger.LogLevel.INFO)
-    logger = logging.getLogger(__name__)
+    loggerWrapper = mypycommons.logger.CommonLogger(
+        loggerName="apply-permissions-logger", 
+        logDir=getProjectLogsDir(), 
+        logFilename="apply-permissions.py.log"
+    )
+    logger = loggerWrapper.getLogger()
 
-    logger.info("Starting file permission application script")
-    logger.info("Reading permission config file: {}".format(configFilePath))
+    configFilePath = getConfigFilepath(args.configFile)
+    logger.info("Starting permit-enforcer: Reading permission config file: {}".format(configFilePath))
 
     permissionRules = mypycommons.file.readCSVFile(configFilePath)
     currentLine = 1
