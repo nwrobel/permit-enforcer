@@ -1,3 +1,5 @@
-permissions.csv
+
 py-venv-linux
 ~logs
+config/*
+!config/permissions.example.csv
