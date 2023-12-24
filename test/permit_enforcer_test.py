@@ -155,7 +155,8 @@ class PermitEnforcer_ModuleTest(unittest.TestCase):
             #     'mask': ''
             # },
         ]
-        for resultPep in app._permitEnforcerPaths:
+        for pathKey in app._permitEnforcerPaths:
+            resultPep = app._permitEnforcerPaths[pathKey]
             actualPathItemResult = {
                 'path': resultPep.path,
                 'owner': resultPep.owner,

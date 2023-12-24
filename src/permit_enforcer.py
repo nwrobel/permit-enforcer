@@ -7,6 +7,8 @@ import os
 from typing import Literal, List
 from pathlib import Path
 from glob import glob
+from time import sleep
+from tqdm import tqdm
 
 from com.nwrobel import mypycommons
 from com.nwrobel.mypycommons import (
@@ -52,7 +54,7 @@ class PermitEnforcerApp:
 
         self._configFilepath = self._getConfigFilepath(configFilename)
         self._configItems = self._getConfigItems()
-        self._permitEnforcerPaths = []
+        self._permitEnforcerPaths = {} # dict: {'<path>': permitEnforcerPath}
         self._logger = loggerWrapper.getLogger()
         
         self._setPermitEnforcerPaths()
@@ -65,10 +67,12 @@ class PermitEnforcerApp:
         self.applyPermitEnforcerPaths()
 
     def applyPermitEnforcerPaths(self):
-        for pep in self._permitEnforcerPaths:
-            self._logger.info("Applying permission to path: {} ({}:{}, {})".format(pep.path, pep.owner, pep.group, pep.mask))
-            (chownResultTxt, chmodResultTxt) = mypycommons.file.applyPermissionToPath(pep.path, pep.owner, pep.group, pep.mask) 
+        for pathKey in tqdm(self._permitEnforcerPaths):
+            pep = self._permitEnforcerPaths[pathKey]
 
+            #self._logger.debug("Applying permission to path: {} ({}:{}, {})".format(pep.path, pep.owner, pep.group, pep.mask))
+            (chownResultTxt, chmodResultTxt) = mypycommons.file.applyPermissionToPath(pep.path, pep.owner, pep.group, pep.mask)
+           
             if (chownResultTxt):
                 self._logger.error("chown stderr: {}".format(chownResultTxt))
             if (chmodResultTxt):
@@ -103,6 +107,8 @@ class PermitEnforcerApp:
             # get all files in the dir 
             # add the permitEnforcerPaths
             childPaths = mypycommons.file.getChildPathsRecursive(configItem.path)
+            self._logger.info("recursive: found {} child paths".format(len(childPaths)))
+
             allPaths = childPaths + [configItem.path] # include the root dir itself
             for path in allPaths:
                 self._updatePermitEnforcerPath(path, configItem)
@@ -115,18 +121,16 @@ class PermitEnforcerApp:
         return dupePaths
 
     def _updatePermitEnforcerPath(self, path, configItem):
-        currentPaths = [pep.path for pep in self._permitEnforcerPaths] 
-        if (path in currentPaths):
-            # update
-            thatPermitEnforcerPath = [pep for pep in self._permitEnforcerPaths if (pep.path == path)][0]
-            thatPermitEnforcerPath.owner = configItem.owner
-            thatPermitEnforcerPath.group = configItem.group
-            thatPermitEnforcerPath.mask = configItem.mask
-        else:
+        try:
+            matchingPep = self._permitEnforcerPaths[path]
+
+            # update if there is this pep already
+            matchingPep.owner = configItem.owner
+            matchingPep.group = configItem.group
+            matchingPep.mask = configItem.mask   
+        except KeyError:
             # add
-            self._permitEnforcerPaths.append(
-                PermitEnforcerPath(path, configItem)
-            )
+            self._permitEnforcerPaths[path] = PermitEnforcerPath(path, configItem)
 
     def _groupConfigItemsByDepth(self):
         self._configItems.sort(key=lambda x: x.depth)
