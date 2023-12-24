@@ -29,7 +29,7 @@ if __name__ == '__main__':
 
     parser.add_argument("--config-file", 
         help="permissions config file name in config/",
-        default="permissions.csv",
+        default="permissions.json",
         type=str,
         dest='configFilename'
     )

@@ -1,0 +1,65 @@
+[
+    {
+        "path": "C:\\root\\dir1",
+        "owner": "git",
+        "group": "git",
+        "mask": "777",
+        "recursive": false
+    },
+    {
+        "path": "C:\\root\\dir1",
+        "owner": "git",
+        "group": "allppl",
+        "mask": "750",
+        "recursive": true
+    },
+    {
+        "path": "C:\\root",
+        "owner": "root",
+        "group": "root",
+        "mask": "777",
+        "recursive": false
+    },
+    {
+        "path": "C:\\root",
+        "owner": "root",
+        "group": "allppl",
+        "mask": "750",
+        "recursive": true
+    },
+    {
+        "path": "C:\\root\\dir1\\objects",
+        "owner": "object",
+        "group": "object",
+        "mask": "777",
+        "recursive": false
+    },
+    {
+        "path": "C:\\root\\dir1\\objects\\0c.bin",
+        "owner": "see",
+        "group": "object",
+        "mask": "770",
+        "recursive": false
+    },
+    {
+        "path": "C:\\root\\dir1\\objects\\dir2",
+        "owner": "see",
+        "group": "object",
+        "mask": "750",
+        "recursive": true
+    },
+    {
+        "path": "C:\\root\\dir1\\objects\\dir2\\2.txt",
+        "owner": "datad",
+        "group": "datad",
+        "mask": "600",
+        "recursive": false
+    },
+    {
+        "path": "C:\\root\\dir1\\objects\\dir2\\test",
+        "owner": "test",
+        "group": "test",
+        "mask": "400",
+        "recursive": true
+    }
+]

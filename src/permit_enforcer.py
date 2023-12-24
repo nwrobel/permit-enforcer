@@ -8,14 +8,10 @@ from typing import Literal, List
 from pathlib import Path
 from glob import glob
 
-
 from com.nwrobel import mypycommons
 from com.nwrobel.mypycommons import (
     file,
-    time,
-    logger,
-    system,
-    archive
+    logger
 )
 
 def getPathParts(path):
@@ -47,7 +43,6 @@ class PermitEnforcerPath:
         self.group = configItem.group
         self.mask = configItem.mask
 
-
 class PermitEnforcerApp:
     def __init__(self, configFilename: str, loggerWrapper: mypycommons.logger.CommonLogger):
         if (not configFilename):
@@ -72,8 +67,13 @@ class PermitEnforcerApp:
     def applyPermitEnforcerPaths(self):
         for pep in self._permitEnforcerPaths:
             self._logger.info("Applying permission to path: {} ({}:{}, {})".format(pep.path, pep.owner, pep.group, pep.mask))
-            #mypycommons.file.applyPermissionToPath(pep.path, pep.owner, pep.group, pep.mask)      
+            (chownResultTxt, chmodResultTxt) = mypycommons.file.applyPermissionToPath(pep.path, pep.owner, pep.group, pep.mask) 
 
+            if (chownResultTxt):
+                self._logger.error("chown stderr: {}".format(chownResultTxt))
+            if (chmodResultTxt):
+                self._logger.error("chmod stderr: {}".format(chmodResultTxt))
+            
     def _setPermitEnforcerPaths(self):
         groupedConfigItems = self._groupConfigItemsByDepth()
 
@@ -88,19 +88,17 @@ class PermitEnforcerApp:
                 configItemRecursive = [cip for cip in configItemPair if (cip.recursive)][0]
                 configItemNonRecursive = [cip for cip in configItemPair if (not cip.recursive)][0]
 
-                self.apply(configItemRecursive)
-                self.apply(configItemNonRecursive)
+                self._applyConfigItem(configItemRecursive)
+                self._applyConfigItem(configItemNonRecursive)
 
                 configItemsAtDepth.remove(configItemRecursive)
                 configItemsAtDepth.remove(configItemNonRecursive)
 
             # handle rest
             for configItem in configItemsAtDepth:
-                self.apply(configItem)
+                self._applyConfigItem(configItem)
 
-
-
-    def apply(self, configItem):
+    def _applyConfigItem(self, configItem):
         if (configItem.recursive):
             # get all files in the dir 
             # add the permitEnforcerPaths
@@ -115,8 +113,6 @@ class PermitEnforcerApp:
         configItemsPaths = [ci.path for ci in configItemsAtDepth]
         dupePaths = getListDupes(configItemsPaths)
         return dupePaths
-
-
 
     def _updatePermitEnforcerPath(self, path, configItem):
         currentPaths = [pep.path for pep in self._permitEnforcerPaths] 
@@ -133,7 +129,6 @@ class PermitEnforcerApp:
             )
 
     def _groupConfigItemsByDepth(self):
-        #self._configItems.sort(key=lambda x: x.depth, reverse=True)
         self._configItems.sort(key=lambda x: x.depth)
 
         itemsGrouped = []
@@ -144,7 +139,6 @@ class PermitEnforcerApp:
             itemsGrouped.append([depth, itemsAtDepth])
 
         return itemsGrouped
-
 
     def _getConfigItems(self):
         # Todo: validate config file input makes sense
@@ -165,17 +159,8 @@ class PermitEnforcerApp:
             )
         return configItems
 
-
-   
-        # self._logger.info("Applying permission rule #{}: {} ({}:{}, {}, Recursive={})".format(currentLine, rule['path'], rule['owner'], rule['group'], rule['mask'], useRecursive))
-        # mypycommons.file.applyPermissionToPath(rule['path'], rule['owner'], rule['group'], rule['mask'], recursive=useRecursive)
-
-
     def _getConfigFilepath(self, configFilename):
         currentDir = mypycommons.file.getThisScriptCurrentDirectory()
         configDir = mypycommons.file.joinPaths(currentDir, '../config')
 
         return mypycommons.file.joinPaths(configDir, configFilename)
-
-
-    

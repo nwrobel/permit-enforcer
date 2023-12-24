@@ -3,4 +3,4 @@ py-venv-linux
 __pycache__
 ~logs
 config/*
-!config/permissions.example.csv
+!config/permissions.json
