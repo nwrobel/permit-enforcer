@@ -9,6 +9,7 @@ from pathlib import Path
 from glob import glob
 from time import sleep
 from tqdm import tqdm
+import shutil
 
 from com.nwrobel import mypycommons
 from com.nwrobel.mypycommons import (
@@ -16,16 +17,6 @@ from com.nwrobel.mypycommons import (
     logger
 )
 
-def getPathParts(path):
-    path = os.path.normpath(path)
-    pathp = path.split(os.sep)
-    return pathp
-
-def getChildPathsDepth1(rootPath):
-    return glob("{}/*".format(path), recursive=False)
-
-def getListDupes(inputList):
-    return set([x for x in inputList if inputList.count(x) > 1])
 
 class PermitEnforcerConfigItem:
     def __init__(self, path, owner, group, mask, recursive):
@@ -35,7 +26,7 @@ class PermitEnforcerConfigItem:
         self.mask = mask
         self.recursive = recursive
 
-        pathParts = getPathParts(path)
+        pathParts = mypycommons.file.getPathParts(path)
         self.depth = len(pathParts) - 1 # adjust so root / has depth 0
 
 class PermitEnforcerPath:
@@ -67,16 +58,13 @@ class PermitEnforcerApp:
         self.applyPermitEnforcerPaths()
 
     def applyPermitEnforcerPaths(self):
+        self._logger.info("Applying permissions to {} paths".format(len(self._permitEnforcerPaths)))
+
         for pathKey in tqdm(self._permitEnforcerPaths):
             pep = self._permitEnforcerPaths[pathKey]
 
-            #self._logger.debug("Applying permission to path: {} ({}:{}, {})".format(pep.path, pep.owner, pep.group, pep.mask))
-            (chownResultTxt, chmodResultTxt) = mypycommons.file.applyPermissionToPath(pep.path, pep.owner, pep.group, pep.mask)
-           
-            if (chownResultTxt):
-                self._logger.error("chown stderr: {}".format(chownResultTxt))
-            if (chmodResultTxt):
-                self._logger.error("chmod stderr: {}".format(chmodResultTxt))
+            mypycommons.file.applyPermissionToPathOwnerGroup(pep.path, pep.owner, pep.group)
+            mypycommons.file.applyPermissionToPathMask(pep.path, pep.mask)
             
     def _setPermitEnforcerPaths(self):
         groupedConfigItems = self._groupConfigItemsByDepth()
@@ -107,7 +95,7 @@ class PermitEnforcerApp:
             # get all files in the dir 
             # add the permitEnforcerPaths
             childPaths = mypycommons.file.getChildPathsRecursive(configItem.path)
-            self._logger.info("recursive: found {} child paths".format(len(childPaths)))
+            self._logger.info("recursive into '{}': found {} child paths".format(configItem.path, len(childPaths)))
 
             allPaths = childPaths + [configItem.path] # include the root dir itself
             for path in allPaths:
@@ -117,7 +105,7 @@ class PermitEnforcerApp:
 
     def _getDupeConfigItemPaths(self, configItemsAtDepth):
         configItemsPaths = [ci.path for ci in configItemsAtDepth]
-        dupePaths = getListDupes(configItemsPaths)
+        dupePaths = mypycommons.utils.getListDupes(configItemsPaths)
         return dupePaths
 
     def _updatePermitEnforcerPath(self, path, configItem):

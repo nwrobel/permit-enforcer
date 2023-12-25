@@ -9,7 +9,7 @@ Only for on Linux-based, uses `chown` and `chmod` (tested in Ubuntu 18.04, 20.04
 - Run the script `setup.sh` to set up the necessary files (creates a Python virtual env inside the repo dir)
 - Open file `permissions.json` (in config/) and write your permission configuration there
   - tip: you can use any config file you create here
-- While in the repo directory, run (use sudo if needed to change the owner/group or mask of the files):
+- While in the repo directory, run (use sudo if needed):
 ```
 sudo ./pv-venv-linux/bin/python main.py --config-file "permissions.json"
 ```
